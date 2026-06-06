@@ -379,8 +379,50 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
+/// A GUI app launched from Finder/Dock inherits a minimal PATH and can't find
+/// tools like `claude`, `node`, or `python3` that live in the user's shell PATH.
+/// Capture the login shell's PATH and apply it so loops can run those CLIs.
+#[cfg(target_family = "unix")]
+fn inherit_shell_path() {
+    let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/zsh".to_string());
+    // `-lc` sources the user's login profile without needing a TTY.
+    if let Ok(out) = Command::new(&shell)
+        .args(["-lc", "printf %s \"$PATH\""])
+        .output()
+    {
+        if out.status.success() {
+            if let Ok(path) = String::from_utf8(out.stdout) {
+                let path = path.trim();
+                if !path.is_empty() {
+                    std::env::set_var("PATH", path);
+                }
+            }
+        }
+    }
+
+    // Safety net: make sure the usual locations are present even if the above
+    // came back thin.
+    if let Ok(home) = std::env::var("HOME") {
+        let current = std::env::var("PATH").unwrap_or_default();
+        let mut parts: Vec<String> = current.split(':').map(|s| s.to_string()).collect();
+        for extra in [
+            format!("{home}/.local/bin"),
+            "/usr/local/bin".to_string(),
+            "/opt/homebrew/bin".to_string(),
+        ] {
+            if !parts.iter().any(|p| p == &extra) {
+                parts.push(extra);
+            }
+        }
+        std::env::set_var("PATH", parts.join(":"));
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(target_family = "unix")]
+    inherit_shell_path();
+
     tauri::Builder::default()
         .manage(LoopManager {
             processes: Arc::new(Mutex::new(HashMap::new())),
