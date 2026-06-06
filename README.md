@@ -10,6 +10,10 @@ watch the output stream live. Comes with a small companion CLI.
 Built with React + TypeScript + Vite on the front end and Tauri 2 (Rust) on the
 back end.
 
+![Ralph Loop Junkie landing screen](screenshots/landing.png)
+
+![Ralph Loop Junkie workspace](screenshots/workspace.png)
+
 ---
 
 ## What's a Ralph loop?
