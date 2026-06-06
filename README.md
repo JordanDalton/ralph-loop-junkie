@@ -18,7 +18,7 @@ back end.
 
 ## What's a Ralph loop?
 
-A Ralph loop is a shell script that re-spawns a fresh Claude session every
+A Ralph loop is a shell script that re-spawns a fresh agent session every
 iteration, pointed at a small set of plan files, and keeps going until the work
 is complete. Each loop is a self-contained workspace:
 
@@ -35,7 +35,9 @@ is complete. Each loop is a self-contained workspace:
 
 Each iteration `ralph.sh`:
 
-1. Runs `claude --print` against the plan files.
+1. Invokes an agent CLI against the plan files. The default script calls
+   `claude --print`, but `ralph.sh` is just a shell script — swap in whatever
+   non-interactive agent CLI you use (Codex, an OpenRouter-backed CLI, etc.).
 2. Has the agent pick the next unfinished task, do the work, and mark it `done`
    in `tasks.json`.
 3. Runs a verification command (`true` by default — swap in your test command).
@@ -85,8 +87,11 @@ New loops are seeded with a minimal working example whose only task is to say
 
 - **Node.js** and **Rust** (stable) with the
   [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/).
-- **[Claude Code](https://claude.com/claude-code)** (`claude` on your `PATH`) —
-  used by `ralph.sh` to run each iteration.
+- **An agent CLI** that runs non-interactively from the terminal. The default
+  `ralph.sh` calls `claude --print`
+  ([Claude Code](https://claude.com/claude-code)), but the script is fully
+  editable — point it at Codex, an OpenRouter-backed CLI, or any other agent you
+  prefer.
 - **bash** and **python3** — the default loop script uses them (python3 powers
   the task-completion check).
 
