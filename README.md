@@ -106,11 +106,21 @@ npm install
 npm run tauri dev      # run the app in dev mode
 ```
 
-Build a distributable bundle:
+Build the app bundle:
 
 ```bash
-npm run tauri build
+npm run tauri build      # produces Ralph Loop Junkie.app
 ```
+
+The bundle target is set to `app` only, so the build doesn't depend on macOS's
+"control Finder" Automation permission (Tauri's DMG step uses AppleScript and
+fails without it). To produce a `.dmg` for distribution, run:
+
+```bash
+npm run dmg              # packages the built .app into a .dmg via hdiutil
+```
+
+Both artifacts land under `src-tauri/target/release/bundle/`.
 
 Loops and their files are stored under the OS app-data directory, e.g. on macOS:
 
